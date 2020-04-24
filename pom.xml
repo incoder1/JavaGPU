@@ -138,7 +138,7 @@ limitations under the License.
 						<configuration>
 							<rules>
 								<requireJavaVersion>
-									<version>1.7</version>
+									<version>14</version>
 								</requireJavaVersion>
 							</rules>
 						</configuration>
