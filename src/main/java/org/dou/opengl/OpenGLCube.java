@@ -72,39 +72,65 @@ public class OpenGLCube {
 
   private static class Scene implements Renderable, AutoCloseable {
 
+     // Linking Vertex Attributes
+    
+    
     // VBO
+    // Position and normal is interleaving according to the performance best practice https://www.khronos.org/opengl/wiki/Vertex_Specification_Best_Practices
     private static final float[] VERTEX = {
-        // position | normal
+        // position            |     normal
         // left
-        1.0F, 1.0F, 1.0F, 1.0F, 0.0F, 0.0F, 1.0F, 1.0F, -1.0F, 1.0F, 0.0F, 0.0F, 1.0F, -1.0F, -1.0F,
-        1.0F, 0.0F, 0.0F, 1.0F, -1.0F, 1.0F, 1.0F, 0.0F, 0.0F,
+         1.0F,  1.0F,  1.0F, /*|*/  1.0F, 0.0F, 0.0F, 
+         1.0F,  1.0F, -1.0F, /*|*/  1.0F, 0.0F, 0.0F,
+         1.0F, -1.0F, -1.0F, /*|*/  1.0F, 0.0F, 0.0F, 
+         1.0F, -1.0F,  1.0F, /*|*/  1.0F, 0.0F, 0.0F,
         // front
-        -1.0F, 1.0F, 1.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F, 1.0F, 0.0F, 0.0F, 1.0F, 1.0F, -1.0F, 1.0F,
-        0.0F, 0.0F, 1.0F, -1.0F, -1.0F, 1.0F, 0.0F, 0.0F, 1.0F,
+        -1.0F,  1.0F,  1.0F, /*|*/  0.0F, 0.0F, 1.0F,
+         1.0F,  1.0F,  1.0F, /*|*/  0.0F, 0.0F, 1.0F, 
+         1.0F, -1.0F,  1.0F, /*|*/  0.0F, 0.0F, 1.0F, 
+        -1.0F, -1.0F,  1.0F, /*|*/  0.0F, 0.0F, 1.0F,
         // top
-        -1.0F, 1.0F, 1.0F, 0.0F, 1.0F, 0.0F, -1.0F, 1.0F, -1.0F, 0.0F, 1.0F, 0.0F, 1.0F, 1.0F,
-        -1.0F, 0.0F, 1.0F, 0.0F, 1.0F, 1.0F, 1.0F, 0.0F, 1.0F, 0.0F,
+        -1.0F, 1.0F,  1.0F,  /*|*/  0.0F, 1.0F, 0.0F,
+        -1.0F, 1.0F, -1.0F,  /*|*/  0.0F, 1.0F, 0.0F,
+         1.0F, 1.0F, -1.0F,  /*|*/  0.0F, 1.0F, 0.0F,
+         1.0F, 1.0F,  1.0F,  /*|*/  0.0F, 1.0F, 0.0F,
         // bottom
-        -1.0F, -1.0F, 1.0F, 0.0F, -1.0F, 0.0F, -1.0F, -1.0F, -1.0F, 0.0F, -1.0F, 0.0F, 1.0F, -1.0F,
-        -1.0F, 0.0F, -1.0F, 0.0F, 1.0F, -1.0F, 1.0F, 0.0F, -1.0F, 0.0F,
+        -1.0F, -1.0F,  1.0F,  /*|*/  0.0F, -1.0F, 0.0F,
+        -1.0F, -1.0F, -1.0F, /*|*/   0.0F, -1.0F, 0.0F, 
+         1.0F, -1.0F, -1.0F,  /*|*/  0.0F, -1.0F,  0.0F,
+         1.0F, -1.0F,  1.0F,  /*|*/  0.0F, -1.0F, 0.0F,
         // right
-        -1.0F, 1.0F, 1.0F, -1.0F, 0.0F, 0.0F, -1.0F, 1.0F, -1.0F, -1.0F, 0.0F, 0.0F, -1.0F, -1.0F,
-        -1.0F, -1.0F, 0.0F, 0.0F, -1.0F, -1.0F, 1.0F, -1.0F, 0.0F, 0.0F,
+        -1.0F,  1.0F,  1.0F,  /*|*/ -1.0F, 0.0F, 0.0F,
+        -1.0F,  1.0F, -1.0F,  /*|*/ -1.0F, 0.0F, 0.0F,
+        -1.0F, -1.0F, -1.0F,  /*|*/ -1.0F, 0.0F, 0.0F,
+        -1.0F, -1.0F,  1.0F,  /*|*/ -1.0F, 0.0F, 0.0F,
         // back
-        -1.0F, 1.0F, -1.0F, 0.0F, 0.0F, -1.0F, 1.0F, 1.0F, -1.0F, 0.0F, 0.0F, -1.0F, 1.0F, -1.0F,
-        -1.0F, 0.0F, 0.0F, -1.0F, -1.0F, -1.0F, -1.0F, 0.0F, 0.0F, -1.0F};
+        -1.0F,  1.0F, -1.0F,  /*|*/  0.0F, 0.0F, -1.0F,
+         1.0F,  1.0F, -1.0F,  /*|*/  0.0F, 0.0F, -1.0F,
+         1.0F, -1.0F, -1.0F,  /*|*/  0.0F, 0.0F, -1.0F, 
+        -1.0F, -1.0F, -1.0F,  /*|*/  0.0F, 0.0F, -1.0F
+    };
 
-    // IBO
-    private static final short[] INDECIES = {0, 1, 3, 1, 2, 3, 4, 5, 7, 5, 6, 7, 8, 9, 11, 9, 10,
-        11, 12, 13, 15, 13, 14, 15, 16, 17, 19, 17, 18, 19, 20, 21, 23, 21, 22, 23};
+    // IBO, see details https://learnopengl.com/Getting-started/Hello-Triangle
+    private static final short[] INDECIES = {
+        0,  1,  3,  1,  2,  3,  // left quad
+        4,  5,  7,  5,  6,  7,  // front quad
+        8,  9,  11, 9, 10,  11, // top quad
+        12, 13, 15, 13, 14, 15, // bottom quad
+        16, 17, 19, 17, 18, 19, // right quad
+        20, 21, 23, 21, 22, 23  // back quad
+    };
 
+    // Light color. See https://learnopengl.com/Lighting/Basic-Lighting
     private static float[] LIGHT = {-0.5F, 0.5F, -5.5F, 1.0F, // position
         0.0F, 0.0F, 0.0F, 1.0F, // ambient color
         1.0F, 1.0F, 1.0F, 1.0F, // diffuse color
         1.0F, 1.0F, 1.0F, 0.0F // specular color
     };
 
-    private static float[] MATERIAL = {0.0F, 0.0F, 0.0F, 1.0F, // ambient
+    // Material, a white plasic. See  https://learnopengl.com/Lighting/Materials
+    private static float[] MATERIAL = {
+        0.0F, 0.0F, 0.0F, 1.0F, // ambient
         0.4F, 0.4F, 0.4F, 1.0F, // diffuse
         0.7F, 0.0F, 0.0F, 1.0F, // specular
         0.0F, 0.0F, 0.0F, 1.0F // emission
