@@ -22,8 +22,10 @@ import org.lwjgl.system.MemoryStack;
 public class MultArrays {
 
   private static final String KERNEL =
-      "kernel void mul_arrays(global const float *a, global const float *b, global float *answer) {"
-          + "unsigned int xid = get_global_id(0); answer[xid] = a[xid] * b[xid]; }";
+      "kernel void mul_arrays(global const float *a, global const float *b, global float *answer) { \n"
+      + " unsigned int xid = get_global_id(0); \n"
+      + " answer[xid] = a[xid] * b[xid]; \n"
+      + " } \n";
 
   private static final float[] LEFT_ARRAY = {1F, 3F, 5F, 7F};
   private static final float[] RIGHT_ARRAY = {2F, 4F, 6F, 8F};
@@ -70,10 +72,13 @@ public class MultArrays {
   private static void printSequence(String label, FloatBuffer sequence, PrintStream to) {
     to.print(label);
     to.print(": [ ");
-    for (int i = 0; i < sequence.limit(); i++) {
-      to.print(' ');
+    int i = 0;
+    to.print(Float.toString(sequence.get(i)));
+    ++i;
+    while (i < sequence.limit()) {
+      to.print(", ");
       to.print(Float.toString(sequence.get(i)));
-      to.print(' ');
+      ++i;
     }
     to.println(" ]");
   }
