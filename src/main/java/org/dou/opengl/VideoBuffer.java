@@ -13,16 +13,7 @@
  */
 package org.dou.opengl;
 
-import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.GL_DYNAMIC_COPY;
-import static org.lwjgl.opengl.GL15.GL_DYNAMIC_DRAW;
-import static org.lwjgl.opengl.GL15.GL_DYNAMIC_READ;
-import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL15.GL_STATIC_COPY;
-import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
-import static org.lwjgl.opengl.GL15.GL_STREAM_COPY;
-import static org.lwjgl.opengl.GL15.GL_STREAM_DRAW;
-import static org.lwjgl.opengl.GL15.GL_STREAM_READ;
+import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL15.glBindBuffer;
 import static org.lwjgl.opengl.GL15.glBufferData;
 import static org.lwjgl.opengl.GL15.glDeleteBuffers;
@@ -119,22 +110,42 @@ public final class VideoBuffer {
   }
 
 
+  /**
+   * Returns this buffer OpenGL native identifier
+   * @return this buffer native identifier
+   */  
   public int getId() {
     return id;
   }
 
+  /**
+   * Returns this buffer size in elements
+   * @return this buffer size in elements
+   */  
   public int getSize() {
     return size;
   }
 
+  /**
+   * Returns this buffer OpenGL type enumeration
+   * @return this buffer type enumeration
+   */
   public Type getType() {
     return type;
   }
 
+  /**
+   * Returns this buffer OpenGL usage enumeration
+   * @return this buffer usage enumeration
+   */
   public Usage getUsage() {
     return usage;
   }
 
+  /**
+   * Returns this buffer OpenGL binding data type enumeration
+   * @return this buffer binding data type enumeration
+   */
   public GLType getDataType() {
     return dataType;
   }
@@ -224,19 +235,78 @@ public final class VideoBuffer {
       this.gl = gl;
     }
 
+    /**
+     * Returns OpenGL enumeration value to pass into OpenGL functions
+     * 
+     * @return OpenGL enumeration value
+     */
     public int glEnum() {
       return gl;
     }
+
   }
 
   /**
-   * OpenGL buffer usage
+   * OpenGL buffer usage, specifies the expected usage pattern of the data store. The frequency of
+   * access may be one of these STREAM
+   * 
+   * The data store contents will be modified once and used at most a few times. STATIC
+   * 
+   * The data store contents will be modified once and used many times. DYNAMIC
+   * 
+   * The data store contents will be modified repeatedly and used many times.
+   * 
+   * The nature of access may be one of these:
+   * 
+   * DRAW
+   * 
+   * The data store contents are modified by the application, and used as the source for GL drawing
+   * and image specification commands. READ
+   * 
+   * The data store contents are modified by reading data from the GL, and used to return that data
+   * when queried by the application. COPY
+   * 
+   * The data store contents are modified by reading data from the GL, and used as the source for GL
+   * drawing and image specification commands.
    */
   public enum Usage {
-    DYNAMIC_COPY(GL_DYNAMIC_COPY), DYNAMIC_DRAW(GL_DYNAMIC_DRAW), DYNAMIC_READ(
-        GL_DYNAMIC_READ), STATIC_COPY(GL_STATIC_COPY), STATIC_DRAW(GL_STATIC_DRAW), STATIC_READ(
-            GL_DYNAMIC_READ), STREAM_COPY(
-                GL_STREAM_COPY), STREAM_DRAW(GL_STREAM_DRAW), STREAM_READ(GL_STREAM_READ);
+
+    /**
+     * Dynamic and copy combination, see enum description
+     */
+    DYNAMIC_COPY(GL_DYNAMIC_COPY),
+    /**
+     * Dynamic and draw combination, see enum description
+     */
+    DYNAMIC_DRAW(GL_DYNAMIC_DRAW),
+    /**
+     * Dynamic and read combination, see enum description
+     */
+    DYNAMIC_READ(GL_DYNAMIC_READ),
+    /**
+     * Static and copy combination, see enum description
+     */
+    STATIC_COPY(GL_STATIC_COPY),
+    /**
+     * Static and draw combination, see enum description
+     */
+    STATIC_DRAW(GL_STATIC_DRAW),
+    /**
+     * Static and copy combination, see enum description
+     */
+    STATIC_READ(GL_STATIC_READ),
+    /**
+     * Stream and copy combination, see enum description
+     */
+    STREAM_COPY(GL_STREAM_COPY),
+    /**
+     * Stream and draw combination, see enum description
+     */
+    STREAM_DRAW(GL_STREAM_DRAW),
+    /**
+     * Stream and read combination, see enum description
+     */
+    STREAM_READ(GL_STREAM_READ);
 
     private final int gl;
 
@@ -244,9 +314,15 @@ public final class VideoBuffer {
       this.gl = gl;
     }
 
+    /**
+     * Returns OpenGL enumeration value to pass into OpenGL functions
+     * 
+     * @return OpenGL enumeration value
+     */
     public int glEnum() {
       return this.gl;
     }
+
   }
 
 }

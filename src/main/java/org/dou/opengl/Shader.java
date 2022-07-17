@@ -47,17 +47,42 @@ public final class Shader {
    * Supported OpenGL 4.3+ shader types
    */
   public static enum Type {
-
-    COMPUTE(GL43.GL_COMPUTE_SHADER), FRAGMENT(GL_FRAGMENT_SHADER), GEOMETRY(
-        GL32C.GL_GEOMETRY_SHADER), TESS_CONTROL(GL40.GL_TESS_CONTROL_SHADER), TESS_EVALUATION(
-            GL40.GL_TESS_EVALUATION_SHADER), VERTEX(GL_VERTEX_SHADER);
+    /**
+     * Shader that is intended to run on the programmable compute processor.
+     */
+    COMPUTE(GL43.GL_COMPUTE_SHADER),
+    /**
+     * Shader that is intended to run on the programmable fragment processor
+     */
+    FRAGMENT(GL_FRAGMENT_SHADER),
+    /**
+     * Shader that is intended to run on the programmable geometry processor
+     */
+    GEOMETRY(GL32C.GL_GEOMETRY_SHADER), 
+    /**
+     * Shader that is intended to run on the programmable tessellation processor in the control stage
+     */
+    TESS_CONTROL(GL40.GL_TESS_CONTROL_SHADER),
+    /**
+     * Shader that is intended to run on the programmable tessellation processor in the evaluation stage
+     */
+    TESS_EVALUATION(GL40.GL_TESS_EVALUATION_SHADER),
+    /**
+     * Shader that is intended to run on the programmable vertex processor
+     */
+    VERTEX(GL_VERTEX_SHADER);
 
     private final int gl;
 
     private Type(int gl) {
       this.gl = gl;
     }
-
+    
+    /**
+    * Returns OpenGL enumeration value to pass into OpenGL functions
+    * 
+    * @return OpenGL enumeration value
+    */
     public int glEnum() {
       return this.gl;
     }
@@ -90,7 +115,15 @@ public final class Shader {
     return load(loadSource(source), type);
   }
 
-  private static Shader load(String source, Type type) {
+  /**
+   * Loads GLSL shader source code from a string
+   * 
+   * @param source to load shader from
+   * @param type shader type to load
+   * @return new shader object
+   * @throws IllegalStateException when shader can not be read, or compiled
+   */
+  public static Shader load(String source, Type type) {
     int id = glCreateShader(type.glEnum());
     glShaderSource(id, source);
     glCompileShader(id);
