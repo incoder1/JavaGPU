@@ -24,7 +24,7 @@ limitations under the License.
 
 	<properties>
 		<java.version>1.8</java.version>
-		<lwjgl.version>3.3.1</lwjgl.version>
+		<lwjgl.version>3.3.3</lwjgl.version>
 	</properties>
 
 	<profiles>
@@ -98,7 +98,7 @@ limitations under the License.
 		<dependency>
 			<groupId>org.joml</groupId>
 			<artifactId>joml</artifactId>
-			<version>1.9.24</version>
+			<version>1.10.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.lwjgl</groupId>

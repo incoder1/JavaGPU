@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Viktor Gubin
+ * Copyright 2020-2023 Viktor Gubin
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -122,14 +122,14 @@ public class OpenGLCube {
     };
 
     // Light color. See https://learnopengl.com/Lighting/Basic-Lighting
-    private static float[] LIGHT = {-0.5F, 0.5F, -5.5F, 1.0F, // position
+    private static final float[] LIGHT = {-0.5F, 0.5F, -5.5F, 1.0F, // position
         0.0F, 0.0F, 0.0F, 1.0F, // ambient color
         1.0F, 1.0F, 1.0F, 1.0F, // diffuse color
         1.0F, 1.0F, 1.0F, 0.0F // specular color
     };
 
     // Material, a white plasic. See  https://learnopengl.com/Lighting/Materials
-    private static float[] MATERIAL = {
+    private static final float[] MATERIAL = {
         0.0F, 0.0F, 0.0F, 1.0F, // ambient
         0.4F, 0.4F, 0.4F, 1.0F, // diffuse
         0.7F, 0.0F, 0.0F, 1.0F, // specular

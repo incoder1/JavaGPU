@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Viktor Gubin
+ * Copyright 2020-2023 Viktor Gubin
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -171,7 +171,7 @@ public final class VideoBuffer {
   /**
    * OpenGL 4.3+ supported buffer type
    */
-  public static enum Type {
+  public enum Type {
     /**
      * Vertex attributes. Requires: OpenGL 1.5+
      */

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Viktor Gubin
+ * Copyright 2020-2023 Viktor Gubin
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.NavigableSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
@@ -63,39 +64,13 @@ public final class ClRuntime implements AutoCloseable {
 
   private static void validateCL(int errCode, String errMessage) {
     if (errCode != CL_SUCCESS) {
-      throw new RuntimeException(String.format("OpenCL error [%d]. %s", errCode, errMessage));
+      throw new CLRuntimeException(errCode, errMessage);
     }
   }
 
   private static void validateCL(int errCode) {
     if (errCode != CL_SUCCESS) {
-      throw new RuntimeException(String.format("OpenCL error [%d].", errCode));
-    }
-  }
-
-  private static String getPlatformInfoStringASCII(long cl_platform_id, int paramName) {
-    try (MemoryStack stack = MemoryStack.stackPush()) {
-      PointerBuffer pp = stack.mallocPointer(1);
-      validateCL(clGetPlatformInfo(cl_platform_id, paramName, (ByteBuffer) null, pp));
-      int bytes = (int) pp.get(0);
-
-      ByteBuffer buffer = stack.malloc(bytes);
-      validateCL(clGetPlatformInfo(cl_platform_id, paramName, buffer, null));
-
-      return MemoryUtil.memASCII(buffer, bytes - 1);
-    }
-  }
-
-  private static String getPlatformInfoStringUTF8(long cl_platform_id, int paramName) {
-    try (MemoryStack stack = MemoryStack.stackPush()) {
-      PointerBuffer pp = stack.mallocPointer(1);
-      validateCL(clGetPlatformInfo(cl_platform_id, paramName, (ByteBuffer) null, pp));
-      int bytes = (int) pp.get(0);
-
-      ByteBuffer buffer = stack.malloc(bytes);
-      validateCL(clGetPlatformInfo(cl_platform_id, paramName, buffer, null));
-
-      return MemoryUtil.memUTF8(buffer, bytes - 1);
+      throw new CLRuntimeException(errCode);
     }
   }
 
@@ -138,15 +113,40 @@ public final class ClRuntime implements AutoCloseable {
       this.capabilities = capabilities;
     }
 
+    private String getInfoStringASCII(int paramName) {
+      try (MemoryStack stack = MemoryStack.stackPush()) {
+        PointerBuffer pp = stack.mallocPointer(1);
+        validateCL(clGetPlatformInfo(this.id, paramName, (ByteBuffer) null, pp));
+        int bytes = (int) pp.get(0);
+
+        ByteBuffer buffer = stack.malloc(bytes);
+        validateCL(clGetPlatformInfo(this.id, paramName, buffer, null));
+
+        return MemoryUtil.memASCII(buffer, bytes - 1);
+      }
+    }
+
+    private String getPlatformInfoStringUTF8(int paramName) {
+      try (MemoryStack stack = MemoryStack.stackPush()) {
+        PointerBuffer pp = stack.mallocPointer(1);
+        validateCL(clGetPlatformInfo(this.id, paramName, (ByteBuffer) null, pp));
+        int bytes = (int) pp.get(0);
+
+        ByteBuffer buffer = stack.malloc(bytes);
+        validateCL(clGetPlatformInfo(this.id, paramName, buffer, null));
+
+        return MemoryUtil.memUTF8(buffer, bytes - 1);
+      }
+    }
+
     /**
      * Returns this platform vendor name string
      * 
      * @return platform vendor name
      */
     public String getVendor() {
-      return capabilities.cl_khr_icd
-          ? getPlatformInfoStringASCII(id, KHRICD.CL_PLATFORM_ICD_SUFFIX_KHR)
-          : getPlatformInfoStringUTF8(id, CL_PLATFORM_VENDOR);
+      return capabilities.cl_khr_icd ? getInfoStringASCII(KHRICD.CL_PLATFORM_ICD_SUFFIX_KHR)
+          : getPlatformInfoStringUTF8(CL_PLATFORM_VENDOR);
     }
 
     private NavigableSet<Device> getDevices(int deviceType) {
@@ -213,6 +213,23 @@ public final class ClRuntime implements AutoCloseable {
     @Override
     public int compareTo(Platform o) {
       return Long.compare(this.id, o.id);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj)
+        return true;
+      if (obj == null)
+        return false;
+      if (getClass() != obj.getClass())
+        return false;
+      Platform other = (Platform) obj;
+      return id == other.id;
     }
 
   }
@@ -286,6 +303,23 @@ public final class ClRuntime implements AutoCloseable {
       return Long.compare(this.id, o.id);
     }
 
+    @Override
+    public int hashCode() {
+      return Objects.hash(id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj)
+        return true;
+      if (obj == null)
+        return false;
+      if (getClass() != obj.getClass())
+        return false;
+      Device other = (Device) obj;
+      return id == other.id;
+    }
+
   }
 
   /**
@@ -311,7 +345,7 @@ public final class ClRuntime implements AutoCloseable {
      */
     private CommandQueue createCommandQueue() {
       try (MemoryStack stack = MemoryStack.stackPush()) {
-        IntBuffer err = (IntBuffer) stack.mallocInt(1).put(CL_SUCCESS).flip();
+        IntBuffer err = stack.mallocInt(1).put(CL_SUCCESS).flip();
         long cqId = clCreateCommandQueue(id, device.getId(), 0, err);
         validateCL(err.get(0), "Can not create command queue");
         return new CommandQueue(this, cqId);
@@ -345,7 +379,9 @@ public final class ClRuntime implements AutoCloseable {
         case CL_INVALID_VALUE:
           throw new IllegalStateException("Invalid program params");
         case CL_INVALID_BUILD_OPTIONS:
-          throw new IllegalStateException("Invalid program build options");
+          throw new IllegalArgumentException("Invalid program build options");
+        default:
+          throw new CLRuntimeException(errCode);
       }
       return new Program(createCommandQueue(), programId);
     }
@@ -396,7 +432,7 @@ public final class ClRuntime implements AutoCloseable {
 
     private Program(CommandQueue cmdQueue, long id) {
       this.cmdQueue = cmdQueue;
-      this.kernels = new TreeSet<Kernel>();
+      this.kernels = new TreeSet<>();
       this.id = id;
     }
 
@@ -478,6 +514,8 @@ public final class ClRuntime implements AutoCloseable {
 
     private static void validateArg(final int errorCode) {
       switch (errorCode) {
+        case CL_SUCCESS:
+          break;
         case CL_INVALID_ARG_INDEX:
           throw new IllegalArgumentException("Invalid argument index");
         case CL_INVALID_ARG_VALUE:
@@ -486,15 +524,14 @@ public final class ClRuntime implements AutoCloseable {
           throw new IllegalArgumentException("Memory object expected");
         case CL_INVALID_SAMPLER:
           throw new IllegalArgumentException("Sampler expected");
-        case CL_SUCCESS:
-          break;
+        default:
+          throw new CLRuntimeException(errorCode);
       }
     }
 
     private void addArg(int index, int val) {
       try (MemoryStack stack = MemoryStack.stackPush()) {
-        validateArg(
-            clSetKernelArg(this.getId(), index, (IntBuffer) stack.mallocInt(1).put(val).flip()));
+        validateArg(clSetKernelArg(this.getId(), index, stack.mallocInt(1).put(val).flip()));
       }
     }
 
@@ -578,6 +615,8 @@ public final class ClRuntime implements AutoCloseable {
           throw new ExecutionException(new IllegalStateException("Invalid kernel args"));
         case CL_INVALID_WORK_GROUP_SIZE:
           throw new ExecutionException(new IllegalStateException("Invalid work group size"));
+        default:
+          throw new CLRuntimeException(errorCode);
       }
     }
 
@@ -601,6 +640,24 @@ public final class ClRuntime implements AutoCloseable {
     public int compareTo(Kernel o) {
       return Long.compare(this.id, o.id);
     }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj)
+        return true;
+      if (obj == null)
+        return false;
+      if (getClass() != obj.getClass())
+        return false;
+      Kernel other = (Kernel) obj;
+      return id == other.id;
+    }
+
   }
 
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Viktor Gubin
+ * Copyright 2020-2023 Viktor Gubin
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -48,7 +48,7 @@ public class Program {
     for (Shader shader : shaders) {
       glAttachShader(id, shader.getId());
     }
-    this.buffers = new LinkedList<VideoBuffer>();
+    this.buffers = new LinkedList<>();
   }
 
   /**
@@ -221,7 +221,7 @@ public class Program {
     }
     final int dtpSize = vbo.getDataType().sizeOf();
     int byteStride = stride * dtpSize;
-    long componentOffset = offset * dtpSize;
+    long componentOffset = offset * ((long)dtpSize);
     vbo.bind();
     glVertexAttribPointer(attrNo, vertexSize, vbo.getDataType().glEnum(), normalized, byteStride,
         componentOffset);
@@ -335,17 +335,17 @@ public class Program {
     }
 
     public Program build() {
-      if (!shaders.stream().anyMatch(s -> Shader.Type.VERTEX == s.getType())) {
+      if (shaders.stream().noneMatch(s -> Shader.Type.VERTEX == s.getType())) {
         throw new IllegalStateException("Vertex shader is manadatory");
       }
-      if (!shaders.stream().anyMatch(s -> Shader.Type.FRAGMENT == s.getType())) {
+      if (shaders.stream().noneMatch(s -> Shader.Type.FRAGMENT == s.getType())) {
         throw new IllegalStateException("Fragment shader is manadatory");
       }
       if (shaders.stream().anyMatch(s -> Shader.Type.TESS_CONTROL == s.getType())
-          && !shaders.stream().anyMatch(s -> Shader.Type.TESS_EVALUATION == s.getType())) {
+          && shaders.stream().noneMatch(s -> Shader.Type.TESS_EVALUATION == s.getType())) {
         throw new IllegalStateException(
             "Tesselation control shader exist, but no tesselation evaluation shader load");
-      } else if (!shaders.stream().anyMatch(s -> Shader.Type.TESS_CONTROL == s.getType())
+      } else if (shaders.stream().noneMatch(s -> Shader.Type.TESS_CONTROL == s.getType())
           && shaders.stream().anyMatch(s -> Shader.Type.TESS_EVALUATION == s.getType())) {
         throw new IllegalStateException(
             "Tesselation evaluetion shader exist, but no tesselation control shader load");

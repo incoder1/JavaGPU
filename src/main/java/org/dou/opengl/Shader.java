@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Viktor Gubin
+ * Copyright 2020-2023 Viktor Gubin
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -46,7 +46,7 @@ public final class Shader {
   /**
    * Supported OpenGL 4.3+ shader types
    */
-  public static enum Type {
+  public enum Type {
     /**
      * Shader that is intended to run on the programmable compute processor.
      */
